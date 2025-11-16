@@ -1,14 +1,6 @@
-name: check-does-build-pr
+name: check-does-build
 
-on:
-  workflow_dispatch: {}
-  pull_request:
-    branches:
-      - "*"
-
-permissions:
-  contents: read
-
+on: [ push ]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,20 +15,28 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Loom Cache
+        uses: actions/cache@v4
+        with:
+          path: "**/.gradle/loom-cache"
+          key: "${{ runner.os }}-gradle-${{ hashFiles('**/libs.versions.*', '**/*.gradle*', '**/gradle-wrapper.properties') }}"
+          restore-keys: "${{ runner.os }}-gradle-"
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-read-only: true
-
-      - name: Ensure gradlew is executable
-        run: chmod +x ./gradlew
+          cache-read-only: false
+          cache-cleanup: never
 
       - name: Gradle build
-        run: ./gradlew build
+        run: ./gradlew -I init.gradle build
 
-      # 🟩 Add this step to keep your jar file!
-      - name: Upload built jar
+      # 🟩 Upload every built JAR from any Gradle subproject
+      - name: Upload built jars (all modules)
         uses: actions/upload-artifact@v4
         with:
-          name: voxy-built-jar
-          path: build/libs/*.jar
+          name: voxy-built-jars-${{ github.ref_name }}-${{ github.sha }}
+          path: |
+            **/build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 14
