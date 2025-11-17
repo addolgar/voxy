@@ -230,6 +230,7 @@ public class VoxyRenderSystem {
 
         int oldFB = GL11.glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
         int boundFB = oldFB;
+        boolean skipPipeline = false;
 
         int[] dims = new int[4];
         glGetIntegerv(GL_VIEWPORT, dims);
@@ -239,7 +240,9 @@ public class VoxyRenderSystem {
         //var target = DefaultTerrainRenderPasses.CUTOUT.getTarget();
         //boundFB = ((net.minecraft.client.texture.GlTexture) target.getColorAttachment()).getOrCreateFramebuffer(((GlBackend) RenderSystem.getDevice()).getFramebufferManager(), target.getDepthAttachment());
         if (boundFB == 0) {
-            throw new IllegalStateException("Cannot use the default framebuffer as cannot source from it");
+            // We can't safely use the default framebuffer as a source for Voxy's pipeline.
+            // Instead of crashing the game, just skip the Voxy pipeline this frame.
+            skipPipeline = true;
         }
 
         //this.autoBalanceSubDivSize();
@@ -256,7 +259,10 @@ public class VoxyRenderSystem {
 
 
         //The entire rendering pipeline (excluding the chunkbound thing)
-        this.pipeline.runPipeline(viewport, boundFB, dims[2], dims[3]);
+        if (!skipPipeline) {
+            this.pipeline.runPipeline(viewport, boundFB, dims[2], dims[3]);
+        }
+
 
 
         TimingStatistics.main.stop();
