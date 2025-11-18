@@ -360,6 +360,9 @@ public class VoxyRenderSystem {
         if (MAX_FPS < Minecraft.getInstance().getFps() && canDecreaseSize) {
             VoxyConfig.CONFIG.subDivisionSize = Math.max(VoxyConfig.CONFIG.subDivisionSize - DECREASE_PER_SECOND / Math.max(1f, Minecraft.getInstance().getFps()), 28);
         }
+        
+        // Ensure subdivision size stays within valid bounds
+        VoxyConfig.CONFIG.subDivisionSize = Math.max(28, Math.min(256, VoxyConfig.CONFIG.subDivisionSize));
     }
 
     private static Matrix4f makeProjectionMatrix(float near, float far) {
