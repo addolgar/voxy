@@ -273,7 +273,11 @@ public final class NodeStore {
         int w = 0;
 
         short flags = 0;
-        flags |= (short) (this.isNodeRequestInFlight(nodeId)?1:0);//1 bit
+        // Clear the hasRequested flag when updating a node so it can make new subdivision requests
+        // The hasRequested flag (bit 0) is set by the GPU traversal shader, but needs to be cleared
+        // when node state changes to allow the node to request children again
+        // NOTE: Do NOT set this based on isNodeRequestInFlight - that's for geometry requests, not subdivision requests
+        // flags |= (short) (this.isNodeRequestInFlight(nodeId)?1:0);//1 bit - REMOVED, always keep at 0 to clear GPU flag
         flags |= (short) ((this.getChildPtrCount(nodeId)-1)<<2);//3 bit
 
         boolean isEligibleForCleaning = false;
