@@ -239,8 +239,15 @@ public class VoxyRenderSystem {
         //var target = DefaultTerrainRenderPasses.CUTOUT.getTarget();
         //boundFB = ((net.minecraft.client.texture.GlTexture) target.getColorAttachment()).getOrCreateFramebuffer(((GlBackend) RenderSystem.getDevice()).getFramebufferManager(), target.getDepthAttachment());
         if (boundFB == 0) {
-            // We can't safely use the default framebuffer as a source for Voxy's pipeline.
-            // Instead of crashing the game, just skip the Voxy pipeline this frame.
+            // Skip Voxy rendering when the default framebuffer is active (e.g., Alex's Caves floodlights)
+            // Restore viewport and return early to avoid crash
+            glViewport(dims[0], dims[1], dims[2], dims[3]);
+            for (int i = 0; i < oldBufferBindings.length; i++) {
+                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, i, oldBufferBindings[i]);
+            }
+            TimingStatistics.main.stop();
+            TimingStatistics.all.stop();
+            return;
         }
 
         //this.autoBalanceSubDivSize();
