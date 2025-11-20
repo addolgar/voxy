@@ -56,6 +56,10 @@ public class MixinRenderSectionManager {
 
     @Inject(method = "onChunkRemoved", at = @At("HEAD"))
     private void injectIngest(int x, int z, CallbackInfo ci) {
+        // Skip virtual worlds from Flywheel/Create (e.g., VirtualRenderWorld)
+        if (this.world.getClass().getName().contains("VirtualRenderWorld")) {
+            return;
+        }
         //TODO: Am not quite sure if this is right
         if (VoxyConfig.CONFIG.ingestEnabled && !BOBBY_INSTALLED) {
             var cccm = (ICheekyClientChunkCache)this.world.getChunkSource();
