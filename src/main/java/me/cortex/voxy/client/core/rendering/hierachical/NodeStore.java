@@ -273,12 +273,7 @@ public final class NodeStore {
         int w = 0;
 
         short flags = 0;
-        // The hasRequested flag (bit 0) needs special handling:
-        // - It's set by the GPU shader when a subdivision request is made
-        // - It must be cleared when node state changes so it can make new requests
-        // - EXCEPT: keep it set if there's an active request in flight to prevent duplicate requests
-        // This fixes nodes getting stuck as big blocks when their state changes but flag persists
-        flags |= (short) (this.isNodeRequestInFlight(nodeId)?1:0);//Keep flag set only during active requests
+        flags |= (short) (this.isNodeRequestInFlight(nodeId)?1:0);//1 bit
         flags |= (short) ((this.getChildPtrCount(nodeId)-1)<<2);//3 bit
 
         boolean isEligibleForCleaning = false;
