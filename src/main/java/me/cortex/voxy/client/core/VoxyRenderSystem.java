@@ -239,15 +239,7 @@ public class VoxyRenderSystem {
         //var target = DefaultTerrainRenderPasses.CUTOUT.getTarget();
         //boundFB = ((net.minecraft.client.texture.GlTexture) target.getColorAttachment()).getOrCreateFramebuffer(((GlBackend) RenderSystem.getDevice()).getFramebufferManager(), target.getDepthAttachment());
         if (boundFB == 0) {
-            // Skip Voxy rendering when the default framebuffer is active (e.g., Alex's Caves floodlights)
-            // Restore viewport and return early to avoid crash
-            glViewport(dims[0], dims[1], dims[2], dims[3]);
-            for (int i = 0; i < oldBufferBindings.length; i++) {
-                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, i, oldBufferBindings[i]);
-            }
-            TimingStatistics.main.stop();
-            TimingStatistics.all.stop();
-            return;
+            throw new IllegalStateException("Cannot use the default framebuffer as cannot source from it");
         }
 
         //this.autoBalanceSubDivSize();
@@ -360,9 +352,6 @@ public class VoxyRenderSystem {
         if (MAX_FPS < Minecraft.getInstance().getFps() && canDecreaseSize) {
             VoxyConfig.CONFIG.subDivisionSize = Math.max(VoxyConfig.CONFIG.subDivisionSize - DECREASE_PER_SECOND / Math.max(1f, Minecraft.getInstance().getFps()), 28);
         }
-        
-        // Ensure subdivision size stays within valid bounds
-        VoxyConfig.CONFIG.subDivisionSize = Math.max(28, Math.min(256, VoxyConfig.CONFIG.subDivisionSize));
     }
 
     private static Matrix4f makeProjectionMatrix(float near, float far) {
