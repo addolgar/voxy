@@ -57,13 +57,17 @@ public abstract class MixinClientLevel {
     private void voxy$injectIngestOnStateChange(BlockPos pos, BlockState old, BlockState updated, CallbackInfo cir) {
         if (old == updated) return;
 
+        // Skip virtual worlds from Flywheel/Create (e.g., VirtualRenderWorld)
+        var self = (Level)(Object)this;
+        if (self.getClass().getName().contains("VirtualRenderWorld")) {
+            return;
+        }
+
         //TODO: is this _really_ needed, we should have enough processing power to not need todo it if its only a
         // block removal
         if (!updated.isAir()) return;
 
         if (!VoxyConfig.CONFIG.ingestEnabled) return;//Only ingest if setting enabled
-
-        var self = (Level)(Object)this;
         var wi = WorldIdentifier.of(self);
         if (wi == null) {
             return;
