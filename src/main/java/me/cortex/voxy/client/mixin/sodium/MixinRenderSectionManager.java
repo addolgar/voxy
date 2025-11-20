@@ -41,6 +41,10 @@ public class MixinRenderSectionManager {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void voxy$resetChunkTracker(ClientLevel level, int renderDistance, CommandList commandList, CallbackInfo ci) {
+        // Skip virtual worlds from Flywheel/Create (e.g., VirtualRenderWorld)
+        if (level.getClass().getName().contains("VirtualRenderWorld")) {
+            return;
+        }
         if (level.levelRenderer != null) {
             var system = ((IGetVoxyRenderSystem)(level.levelRenderer)).getVoxyRenderSystem();
             if (system != null) {
@@ -67,6 +71,10 @@ public class MixinRenderSectionManager {
 
     @Inject(method = "onChunkAdded", at = @At("HEAD"))
     private void voxy$ingestOnAdd(int x, int z, CallbackInfo ci) {
+        // Skip virtual worlds from Flywheel/Create (e.g., VirtualRenderWorld)
+        if (this.world.getClass().getName().contains("VirtualRenderWorld")) {
+            return;
+        }
         if (this.world.levelRenderer != null && VoxyConfig.CONFIG.ingestEnabled) {
             var cccm = this.world.getChunkSource();
             if (cccm != null) {
@@ -98,6 +106,10 @@ public class MixinRenderSectionManager {
         boolean wasBuilt = instance.getFlags()!=0;
         int flags = instance.getFlags();
         instance.setInfo(info);
+        // Skip virtual worlds from Flywheel/Create (e.g., VirtualRenderWorld)
+        if (this.world.getClass().getName().contains("VirtualRenderWorld")) {
+            return;
+        }
         if (wasBuilt == (instance.getFlags()!=0)) {//Only want to do stuff on change
             return;
         }
